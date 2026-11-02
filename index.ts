@@ -4,22 +4,24 @@ import { handleSSE } from "./streams/sse";
 import { handleJSONStream } from "./streams/json";
 import { handleRawStream } from "./streams/raw";
 import { websocket } from "./streams/websocket";
-import pubsub from "./pubsub";
 
 const BASE_PATH = (process.env.BASE_URL ?? "")
     .replace(/\/+$/, "");
 
-const addCORS = (response: Response) => 
-    new Response(response.body, {
+const addCORS = (response: Response) => {
+    const headers = new Headers(response.headers);
+
+    headers.set("Access-Control-Allow-Origin", "*");
+    headers.set("Access-Control-Allow-Methods", "GET, OPTIONS");
+    headers.set("Access-Control-Allow-Headers", "*");
+    headers.set("Access-Control-Max-Age", "86400");
+
+    return new Response(response.body, {
         status: response.status,
-        headers: {
-            ...response.headers,
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "GET, OPTIONS",
-            "Access-Control-Allow-Headers": "*",
-            "Access-Control-Max-Age": "86400"
-        }
+        statusText: response.statusText,
+        headers
     });
+};
 
 Bun.serve({
     port: 3001,
@@ -65,13 +67,23 @@ Bun.serve({
         }
 
         if (path === "/status/ws") {
-            if (server.upgrade(req, { data: {} })) {}
+            if (server.upgrade(req, { data: {} })) { }
             else {
-                return addCORS(new Response("Upgrade failed", { status: 400 }));
+                return addCORS(new Response("Upgrade failed", {
+                    status: 400,
+                    headers: {
+                        'Content-Type': 'text/plain'
+                    }
+                }));
             }
         }
 
-        return addCORS(new Response("Not Found", { status: 404 }))
+        return addCORS(new Response("Not Found", {
+            status: 404,
+            headers: {
+                'Content-Type': 'text/plain'
+            }
+        }))
     },
     websocket
 })
