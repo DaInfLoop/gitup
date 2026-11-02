@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>GitUp</title>
+    </head>
+    <body>
+        <h1>GitUp</h1>
+        <p>
+            This is a mock-NTFY like server to track GitHub's uptime.
+            Point an ntfy client to&nbsp;
+            <code id="url">
+                /events
+            </code>
+            &nbsp;to get status updates.
+        </p>
+        <script>
+            window.addEventListener('DOMContentLoaded', () => {
+                document.querySelector('#url').textContent =
+                    location.origin + location.pathname.replace(/\/+$/, "") + "/status";
+            })
+        </script>
+    </body>
+</html>
